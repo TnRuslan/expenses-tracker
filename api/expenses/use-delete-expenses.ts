@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { useAppStore } from '@/store/app.store';
 import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
@@ -10,13 +11,16 @@ export const deleteExpenses = async (id: number) => {
 	}
 };
 
-export const useDeleteExpenses = () =>
-	useMutation({
+export const useDeleteExpenses = () => {
+	const { removeExpense } = useAppStore();
+	return useMutation({
 		mutationFn: deleteExpenses,
-		onSuccess: () => {
+		onSuccess: (_, id) => {
 			console.log('Delete expense success');
+			removeExpense(id);
 		},
 		onError: (err: Error) => {
 			Alert.alert('Deleting Failed', err.message);
 		},
 	});
+};

@@ -1,44 +1,81 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { StyleSheet, Image, View } from 'react-native';
 
 import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useExpenses } from '@/api/expenses/use-get-expenses';
 import { useAddExpenses } from '@/api/expenses/use-add-expenses';
-import { Button } from '@rneui/themed';
+import { Button, ButtonGroup, Input } from '@rneui/themed';
 import { useUpdateExpenses } from '@/api/expenses/use-update-expenses';
 import { useDeleteExpenses } from '@/api/expenses/use-delete-expenses';
-import { useBalances } from '@/api/balance/use-get-balances';
+import { useAppStore } from '@/store/app.store';
+import React, { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { ExpenseCategory } from '@/types/expenses';
+import {
+	CreateExpenseFormValue,
+	createExpenseSchema,
+} from '@/schemas/expense.schema';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Picker } from '@react-native-picker/picker';
 
 export default function TabTwoScreen() {
-	const { data } = useBalances();
+	// const { data } = useBalances();
+	const categories = Object.values(ExpenseCategory);
+	const defaultValues = {
+		title: '',
+		amount: 0,
+		category: ExpenseCategory.FOOD,
+		date: new Date().toISOString().split('T')[0],
+	};
+	const { data } = useExpenses();
 	const { mutate } = useAddExpenses();
 	const { mutate: updateExpense } = useUpdateExpenses();
 	const { mutate: deleteExpense } = useDeleteExpenses();
 
-	console.log(data);
+	const [amount, setAmount] = useState<string>();
+
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<CreateExpenseFormValue>({
+		defaultValues,
+		resolver: zodResolver(createExpenseSchema),
+	});
+
+	const { balance, expenses, setExpenses } = useAppStore();
 
 	const handleAdd = () => {
 		mutate({
 			title: 'test 1',
-			amount: 100,
-			category: 'games',
+			amount: Number(amount),
+			category: ExpenseCategory.FOOD,
 			date: '2025-03-18',
 		});
+
+		setAmount('');
+	};
+
+	const onSubmit = (data: CreateExpenseFormValue) => {
+		console.log(data);
 	};
 
 	const handleUpdate =
-		(id: number = 10) =>
+		(id: number = 27) =>
 		() => {
-			updateExpense({ id, title: 'Test Update', amount: 1000 });
+			updateExpense({ id, title: 'Test Update', amount: 1333 });
 		};
 
 	const handleDeleteExpenses = (id: number) => () => {
 		deleteExpense(id);
 	};
+
+	useEffect(() => {
+		setExpenses(data || []);
+	}, [data]);
 
 	return (
 		<ParallaxScrollView
@@ -53,12 +90,100 @@ export default function TabTwoScreen() {
 			}
 		>
 			<ThemedView style={styles.titleContainer}>
-				<ThemedText type="title">Explore</ThemedText>
+				<ThemedText type="title">Balance: {balance}</ThemedText>
 			</ThemedView>
 
-			<Button title={'add'} onPress={handleAdd} />
-			<Button title={'Update 10'} onPress={handleUpdate(10)} />
-			<Button title={'delete 1'} onPress={handleDeleteExpenses(5)} />
+			<View style={[styles.verticallySpaced, styles.mt20]}>
+				<Controller
+					control={control}
+					name="title"
+					render={({
+						field: { onChange, onBlur, value },
+						fieldState: { error },
+					}) => (
+						<Input
+							label="Title"
+							leftIcon={{
+								type: 'font-awesome',
+								name: 'pencil',
+								color: 'white',
+							}}
+							onChangeText={onChange}
+							value={value}
+							placeholder="Enter expense title"
+							// keyboardType="numeric"
+							style={{
+								color: 'white',
+							}}
+							onBlur={onBlur}
+							errorMessage={error?.message}
+						/>
+					)}
+				/>
+				<Controller
+					control={control}
+					name="amount"
+					render={({
+						field: { onChange, onBlur, value },
+						fieldState: { error },
+					}) => (
+						<Input
+							label="Amount"
+							leftIcon={{
+								type: 'font-awesome',
+								name: 'money',
+								color: 'white',
+							}}
+							onChangeText={(text) => onChange(Number(text))}
+							value={value ? value.toString() : ''}
+							placeholder="0"
+							keyboardType="numeric"
+							style={{
+								color: 'white',
+							}}
+							onBlur={onBlur}
+							errorMessage={error?.message}
+						/>
+					)}
+				/>
+				<Controller
+					control={control}
+					name="category"
+					render={({
+						field: { onChange, onBlur, value },
+						fieldState: { error },
+					}) => (
+						<View style={styles.pickerContainer}>
+							<ThemedText style={styles.pickerLabel}>Category: </ThemedText>
+							<Picker
+								selectedValue={value}
+								onValueChange={(itemValue, itemIndex) => onChange(itemValue)}
+								onBlur={onBlur}
+							>
+								{categories.map((category, index) => (
+									<Picker.Item key={index} label={category} value={category} />
+								))}
+							</Picker>
+						</View>
+					)}
+				/>
+			</View>
+
+			<Button title={'Update 10'} onPress={handleUpdate(27)} />
+
+			{expenses?.length ? (
+				expenses.map((item, i) => (
+					<ThemedView key={item.id}>
+						<ThemedText>№ {i + 1}</ThemedText>
+						<ThemedText>amount: {item.amount}</ThemedText>
+						<ThemedText>title: {item.title}</ThemedText>
+						<ThemedText>category: {item.category}</ThemedText>
+						<Button title="delete" onPress={handleDeleteExpenses(item.id)} />
+					</ThemedView>
+				))
+			) : (
+				<ThemedText>there are no expenses yet</ThemedText>
+			)}
 		</ParallaxScrollView>
 	);
 }
@@ -73,5 +198,40 @@ const styles = StyleSheet.create({
 	titleContainer: {
 		flexDirection: 'row',
 		gap: 8,
+	},
+	verticallySpaced: {
+		paddingTop: 4,
+		paddingBottom: 4,
+		alignSelf: 'stretch',
+	},
+	mt20: {
+		marginTop: 20,
+	},
+	icon: {
+		position: 'absolute',
+		right: 10,
+		top: 15,
+		color: 'white',
+		fontSize: 14,
+	},
+	pickerContainer: {
+		marginBottom: 20,
+	},
+	pickerLabel: {
+		color: 'white',
+		fontSize: 16,
+		marginBottom: 8,
+	},
+	picker: {
+		width: '100%',
+		height: 50,
+		backgroundColor: '#6200ea', // Set background color to match your theme
+		color: 'white', // Text color inside the Picker
+		borderRadius: 8,
+	},
+	errorText: {
+		color: 'red',
+		fontSize: 12,
+		marginTop: 4,
 	},
 });

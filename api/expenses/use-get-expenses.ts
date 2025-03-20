@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase';
+import { Expense } from '@/types/expenses';
 import { useQuery } from '@tanstack/react-query';
 
-export const fetchExpenses = async () => {
+export const fetchExpenses = async (): Promise<Expense[]> => {
 	const { data, error } = await supabase
 		.from('expenses')
 		.select('*')
@@ -15,4 +16,7 @@ export const fetchExpenses = async () => {
 };
 
 export const useExpenses = () =>
-	useQuery({ queryKey: ['expenses'], queryFn: fetchExpenses });
+	useQuery({
+		queryKey: ['expenses'],
+		queryFn: fetchExpenses,
+	});
