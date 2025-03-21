@@ -4,6 +4,7 @@ export type Expense = {
 	amount: number;
 	category: ExpenseCategory;
 	date: string;
+	account_id: number;
 };
 
 export type UpdateExpensesParams = Omit<Expense, 'id'>;

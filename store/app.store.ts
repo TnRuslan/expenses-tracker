@@ -1,23 +1,13 @@
-import { Expense, UpdateExpensesParams } from '@/types/expenses';
+import { BalanceActionType } from '@/types/balances';
+import { AppStoreActions, AppStoreState } from '@/types/store';
+import { handleBalanceUpdate } from '@/utils/balance';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type AppStoreState = {
-	balance: number;
-	expenses: Expense[];
-};
-
-export type AppStoreActions = {
-	setExpenses: (expenses: Expense[]) => void;
-	setBalance: (balance: number) => void;
-	addExpense: (expense: Expense) => void;
-	removeExpense: (id: number) => void;
-	updateExpense: (newExpense: Expense) => void;
-};
-
 const initialState: AppStoreState = {
-	balance: 0,
+	activeBalance: null,
+	accounts: [],
 	expenses: [],
 };
 
@@ -29,9 +19,55 @@ export const useAppStore = create(
 				set(() => ({
 					expenses: [...expenses],
 				})),
-			setBalance: (balance) =>
+			setBalance: (accounts) =>
 				set(() => ({
-					balance: balance,
+					accounts: [...accounts],
+				})),
+			addToBalance: (amount, account_id) =>
+				set((state) => ({
+					accounts: state.accounts.map((acc) =>
+						acc.id === account_id
+							? {
+									...acc,
+									balance: handleBalanceUpdate({
+										action: BalanceActionType.ADD,
+										balance: acc.balance,
+										amount,
+									}),
+							  }
+							: acc,
+					),
+				})),
+			subtractToBalance: (amount, account_id) =>
+				set((state) => ({
+					accounts: state.accounts.map((acc) =>
+						acc.id === account_id
+							? {
+									...acc,
+									balance: handleBalanceUpdate({
+										action: BalanceActionType.SUBTRACT,
+										balance: acc.balance,
+										amount,
+									}),
+							  }
+							: acc,
+					),
+				})),
+			updateBalance: (amount, account_id, previousAmount = 0) =>
+				set((state) => ({
+					accounts: state.accounts.map((acc) =>
+						acc.id === account_id
+							? {
+									...acc,
+									balance: handleBalanceUpdate({
+										action: BalanceActionType.UPDATE,
+										balance: acc.balance,
+										amount,
+										previousAmount,
+									}),
+							  }
+							: acc,
+					),
 				})),
 			addExpense: (expense) =>
 				set((state) => ({

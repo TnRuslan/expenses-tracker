@@ -20,13 +20,14 @@ export const addExpenses = async (expense: UpdateExpensesParams) => {
 };
 
 export const useAddExpenses = () => {
-	const { addExpense } = useAppStore();
+	const { addExpense, subtractToBalance } = useAppStore();
 	return useMutation({
 		mutationFn: addExpenses,
 		onSuccess: (data) => {
 			console.log('Added expense success');
 			if (data.length > 0) {
 				addExpense(data[0]);
+				subtractToBalance(data[0].amount, data[0].account_id);
 			}
 		},
 		onError: (err: Error) => {
