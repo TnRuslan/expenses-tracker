@@ -1,10 +1,23 @@
 export type Expense = {
+	id: number;
 	title: string;
 	amount: number;
-	category: string;
+	category: ExpenseCategory;
 	date: string;
+	account_id: number;
 };
 
-export type UpdateExpensesParams = Partial<Expense> & {
-	id: number;
-};
+export type UpdateExpensesParams = Omit<Expense, 'id'>;
+
+export enum ExpenseCategory {
+	FOOD = 'Food',
+	TRANSPORT = 'Transport',
+	ENTERTAINMENT = 'Entertainment',
+	HEALTH = 'Health',
+	SHOPPING = 'Shopping',
+	HOUSING = 'Housing',
+	UTILITIES = 'Utilities',
+	EDUCATION = 'Education',
+	TRAVEL = 'Travel',
+	OTHER = 'Other',
+}

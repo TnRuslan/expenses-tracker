@@ -1,44 +1,54 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useExpenses } from '@/api/expenses/use-get-expenses';
-import { useAddExpenses } from '@/api/expenses/use-add-expenses';
 import { Button } from '@rneui/themed';
 import { useUpdateExpenses } from '@/api/expenses/use-update-expenses';
 import { useDeleteExpenses } from '@/api/expenses/use-delete-expenses';
+import { useAppStore } from '@/store/app.store';
+import React, { useEffect } from 'react';
+
+import ExpenseForm from '@/components/ExpenseForm';
+import { useAddExpenses } from '@/api/expenses/use-add-expenses';
+import { CreateExpenseFormValue } from '@/schemas/expense.schema';
 import { useBalances } from '@/api/balance/use-get-balances';
 
 export default function TabTwoScreen() {
-	const { data } = useBalances();
-	const { mutate } = useAddExpenses();
-	const { mutate: updateExpense } = useUpdateExpenses();
+	const { data: balanceData } = useBalances();
+	const { data } = useExpenses();
+	// const { mutate: updateExpense } = useUpdateExpenses();
 	const { mutate: deleteExpense } = useDeleteExpenses();
 
-	console.log(data);
+	const { accounts, expenses, setExpenses, setBalance } = useAppStore();
 
-	const handleAdd = () => {
-		mutate({
-			title: 'test 1',
-			amount: 100,
-			category: 'games',
-			date: '2025-03-18',
-		});
+	// const handleUpdate =
+	// 	(id: number = 27, amount: number) =>
+	// 	() => {
+	// 		updateExpense({
+	// 			id,
+	// 			title: 'Test Update',
+	// 			amount: 400,
+	// 			previousAmount: amount,
+	// 		});
+	// 	};
+
+	const { mutate } = useAddExpenses();
+
+	const onSubmit = (data: CreateExpenseFormValue) => {
+		mutate({ ...data, account_id: 2 });
 	};
 
-	const handleUpdate =
-		(id: number = 10) =>
-		() => {
-			updateExpense({ id, title: 'Test Update', amount: 1000 });
-		};
-
-	const handleDeleteExpenses = (id: number) => () => {
-		deleteExpense(id);
+	const handleDeleteExpenses = (id: number, amount: number) => () => {
+		deleteExpense({ id, amount });
 	};
+
+	useEffect(() => {
+		setExpenses(data || []);
+		setBalance(balanceData || []);
+	}, [data, balanceData]);
 
 	return (
 		<ParallaxScrollView
@@ -52,13 +62,32 @@ export default function TabTwoScreen() {
 				/>
 			}
 		>
-			<ThemedView style={styles.titleContainer}>
-				<ThemedText type="title">Explore</ThemedText>
-			</ThemedView>
+			{accounts.length && (
+				<ThemedText type="title">
+					Balance: {accounts[1].balance} {accounts[1].currency}
+				</ThemedText>
+			)}
 
-			<Button title={'add'} onPress={handleAdd} />
-			<Button title={'Update 10'} onPress={handleUpdate(10)} />
-			<Button title={'delete 1'} onPress={handleDeleteExpenses(5)} />
+			<ExpenseForm onSubmit={onSubmit} submitText="Add Expense" />
+
+			{/* <Button title={'Update 10'} onPress={handleUpdate(51, 1333)} /> */}
+
+			{expenses?.length ? (
+				expenses.map((item, i) => (
+					<ThemedView key={item.id}>
+						<ThemedText>№ {i + 1}</ThemedText>
+						<ThemedText>amount: {item.amount}</ThemedText>
+						<ThemedText>title: {item.title}</ThemedText>
+						<ThemedText>category: {item.category}</ThemedText>
+						<Button
+							title="delete"
+							onPress={handleDeleteExpenses(item.id, item.amount)}
+						/>
+					</ThemedView>
+				))
+			) : (
+				<ThemedText>there are no expenses yet</ThemedText>
+			)}
 		</ParallaxScrollView>
 	);
 }
@@ -73,5 +102,13 @@ const styles = StyleSheet.create({
 	titleContainer: {
 		flexDirection: 'row',
 		gap: 8,
+	},
+	verticallySpaced: {
+		paddingTop: 4,
+		paddingBottom: 4,
+		alignSelf: 'stretch',
+	},
+	mt20: {
+		marginTop: 20,
 	},
 });
