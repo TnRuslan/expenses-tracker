@@ -1,26 +1,13 @@
-import { Image, StyleSheet, Platform, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import Auth from '@/components/auth/Auth';
-import { useEffect, useState } from 'react';
-import { Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+
+import { useUserLogout } from '@/api/auth/use-user-logout';
+import { Button } from '@rneui/themed';
 
 export default function HomeScreen() {
-	const [session, setSession] = useState<Session | null>(null);
 
-	useEffect(() => {
-		supabase.auth.getSession().then(({ data: { session } }) => {
-			setSession(session);
-		});
-
-		supabase.auth.onAuthStateChange((_event, session) => {
-			setSession(session);
-		});
-	}, []);
+	const { mutate: logout, isPending: isPendingLogout } = useUserLogout();
 
 	return (
 		<ParallaxScrollView
@@ -40,10 +27,13 @@ export default function HomeScreen() {
 				</View>
 			}
 		>
-			<Auth />
-			{session && session.user && (
-				<ThemedText style={{ color: 'white' }}>{session.user.id}</ThemedText>
-			)}
+			<View style={styles.verticallySpaced}>
+				<Button
+					title="Log out"
+					disabled={isPendingLogout}
+					onPress={() => logout()}
+				/>
+			</View>
 		</ParallaxScrollView>
 	);
 }
@@ -62,5 +52,10 @@ const styles = StyleSheet.create({
 		height: 150,
 		width: 200,
 		position: 'absolute',
+	},
+	verticallySpaced: {
+		paddingTop: 4,
+		paddingBottom: 4,
+		alignSelf: 'stretch',
 	},
 });
