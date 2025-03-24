@@ -3,17 +3,19 @@ import { useAppStore } from '@/store/app.store';
 import { Expense } from '@/types/expenses';
 import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
+import { useUpdateBalance } from '../balance/use-update-balances';
 
 export const updateExpenses = async ({
 	id,
 	previousAmount,
 	...expense
-}: Partial<Expense> & { previousAmount: number }) => {
+}: Partial<Expense> & { previousAmount: number }): Promise<Expense> => {
 	const { data, error } = await supabase
 		.from('expenses')
 		.update(expense)
 		.eq('id', id)
-		.select('*');
+		.select('*')
+		.single();
 
 	if (error) {
 		throw new Error(error.message);
@@ -23,13 +25,23 @@ export const updateExpenses = async ({
 };
 
 export const useUpdateExpenses = () => {
-	const { updateExpense, updateBalance } = useAppStore();
+	const { mutate } = useUpdateBalance();
+	const { updateExpense, updateBalance, accounts } = useAppStore();
 	return useMutation({
 		mutationFn: updateExpenses,
 		onSuccess: (data, { previousAmount }) => {
-			if (data.length > 0) {
-				updateExpense(data[0]);
-				updateBalance(data[0].amount, data[0].account_id, previousAmount);
+			if (data) {
+				const { amount, account_id } = data;
+
+				updateExpense(data);
+				updateBalance(amount, account_id, previousAmount);
+
+				const updatedBalance = accounts[0]?.balance ?? 0;
+
+				mutate({
+					id: account_id,
+					balance: updatedBalance + previousAmount - amount,
+				});
 			}
 
 			console.log('Updated expense success');

@@ -4,9 +4,7 @@ export type Balance = {
 	id: number;
 };
 
-export type UpdateBalanceParams = Partial<Balance> & {
-	id: number;
-};
+export type UpdateBalanceParams = Pick<Balance, 'id' | 'balance'>;
 
 export enum BalanceActionType {
 	ADD = 'ADD',

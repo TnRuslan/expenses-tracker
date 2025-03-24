@@ -3,11 +3,13 @@ import { UpdateBalanceParams } from '@/types/balances';
 import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
-export const updateBalance = async ({ id, ...balance }: UpdateBalanceParams) => {
+export const updateBalance = async ({ id, balance }: UpdateBalanceParams) => {
 	const { data, error } = await supabase
 		.from('accounts')
-		.update(balance)
-		.eq('id', id);
+		.update({ balance })
+		.eq('id', id)
+		.select('balance')
+		.single();
 
 	if (error) {
 		throw new Error(error.message);

@@ -12,6 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import ControlledInput from '@/components/ui/form/controlled-input';
 import ControlledSelect from '@/components/ui/form/controlled-select';
 import ControlledDatepicker from '@/components/ui/form/controlled-datepicker';
+import { ThemedView } from './ThemedView';
 
 export type ExpenseFormProps = {
 	initialValues?: CreateExpenseFormValue;
@@ -47,7 +48,7 @@ export default function ExpenseForm({
 	};
 
 	return (
-		<View style={[styles.verticallySpaced, styles.mt20]}>
+		<View style={styles.verticallySpaced}>
 			<ControlledInput
 				control={control}
 				name="title"
@@ -94,11 +95,9 @@ export default function ExpenseForm({
 
 const styles = StyleSheet.create({
 	verticallySpaced: {
-		paddingTop: 4,
-		paddingBottom: 4,
 		alignSelf: 'stretch',
-	},
-	mt20: {
-		marginTop: 20,
+		backgroundColor: '#202324',
+		padding: 20,
+		borderRadius: 20,
 	},
 });
