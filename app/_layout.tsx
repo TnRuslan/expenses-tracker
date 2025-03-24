@@ -7,13 +7,15 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import QueryProvider from '@/providers/QueryProvider';
+import { supabase } from '@/lib/supabase';
+import { Session } from '@supabase/supabase-js';
+import Auth from '@/components/auth/Auth';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -21,6 +23,17 @@ export default function RootLayout() {
 	const [loaded] = useFonts({
 		SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
 	});
+	const [session, setSession] = useState<Session | null>(null);
+
+	useEffect(() => {
+		supabase.auth.getSession().then(({ data: { session } }) => {
+			setSession(session);
+		});
+
+		supabase.auth.onAuthStateChange((_event, session) => {
+			setSession(session);
+		});
+	}, []);
 
 	useEffect(() => {
 		if (loaded) {
@@ -35,10 +48,15 @@ export default function RootLayout() {
 	return (
 		<QueryProvider>
 			<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-				<Stack>
-					<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-					<Stack.Screen name="+not-found" />
-				</Stack>
+				{session && session.user ? (
+					<Stack>
+						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+						<Stack.Screen name="+not-found" />
+					</Stack>
+				) : (
+					<Auth />
+				)}
+
 				<StatusBar style="auto" />
 			</ThemeProvider>
 		</QueryProvider>
