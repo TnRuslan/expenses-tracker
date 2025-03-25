@@ -21,12 +21,12 @@ export default function ExpenseCard({ expense }: ExpenseCardProps) {
 	const { mutate: updateExpense } = useUpdateExpenses();
 	const [isOpenUpdateModal, setIsOpenUpdateModal] = useState<boolean>(false);
 
+
 	const { getAccountById } = useAppStore();
 
-	const handleDelete = (id: number, amount: number) => () => {
-		deleteExpense({ id, amount });
+	const handleDelete = (expense: Expense) => () => {
+		deleteExpense(expense);
 	};
-
 	const account = getAccountById(expense.account_id);
 
 	const toggleModal = () => {
@@ -60,7 +60,7 @@ export default function ExpenseCard({ expense }: ExpenseCardProps) {
 					<Button title="Update" onPress={toggleModal} />
 					<Button
 						title="Delete"
-						onPress={handleDelete(expense.id, expense.amount)}
+						onPress={handleDelete(expense)}
 						color={Colors.dark.deleteButton}
 						loading={isPending}
 					/>

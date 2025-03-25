@@ -3,11 +3,9 @@ import { useAppStore } from '@/store/app.store';
 import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { useUpdateBalance } from '../balance/use-update-balances';
+import { Expense } from '@/types/expenses';
 
-export const deleteExpenses = async (params: {
-	id: number;
-	amount: number;
-}) => {
+export const deleteExpenses = async (params: Expense) => {
 	const { error } = await supabase
 		.from('expenses')
 		.delete()
@@ -22,17 +20,17 @@ export const deleteExpenses = async (params: {
 
 export const useDeleteExpenses = () => {
 	const { mutate } = useUpdateBalance();
-	const { removeExpense, addToBalance, accounts } = useAppStore();
+	const { removeExpense, addToBalance, getAccountById } = useAppStore();
 	return useMutation({
 		mutationFn: deleteExpenses,
-		onSuccess: (_, { id, amount }) => {
+		onSuccess: (_, { id, amount, account_id }) => {
 			console.log('Delete expense success');
 			removeExpense(id);
-			addToBalance(amount, 2);
+			addToBalance(amount, account_id);
 
-			const updatedBalance = accounts[0].balance;
+			const updatedBalance = getAccountById(account_id)?.balance ?? 0;
 
-			mutate({ id: 2, balance: updatedBalance + amount });
+			mutate({ id: account_id, balance: updatedBalance + amount });
 		},
 		onError: (err: Error) => {
 			Alert.alert('Deleting Failed', err.message);
