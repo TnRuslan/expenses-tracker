@@ -39,7 +39,7 @@ export default function ExpenseCard({ expense }: ExpenseCardProps) {
 		<>
 			<ThemedView style={styles.card}>
 				<Text style={styles.title}>{expense.title}</Text>
-				<Text style={styles.amount}>{expense.amount}</Text>
+				<Text style={styles.amount}>{String(expense.amount)}</Text>
 				<Text style={styles.category}>{expense.category}</Text>
 				<Text style={styles.date}>
 					{new Date(expense.date).toLocaleDateString()}

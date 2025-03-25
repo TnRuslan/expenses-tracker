@@ -6,7 +6,7 @@ export const fetchExpenses = async (): Promise<Expense[]> => {
 	const { data, error } = await supabase
 		.from('expenses')
 		.select('*')
-		.order('date', { ascending: false });
+		.order('created_at', { ascending: false });
 
 	if (error) {
 		throw new Error(error.message);

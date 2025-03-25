@@ -12,7 +12,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import ControlledInput from '@/components/ui/form/controlled-input';
 import ControlledSelect from '@/components/ui/form/controlled-select';
 import ControlledDatepicker from '@/components/ui/form/controlled-datepicker';
-import { ThemedView } from './ThemedView';
 
 export type ExpenseFormProps = {
 	initialValues?: CreateExpenseFormValue;

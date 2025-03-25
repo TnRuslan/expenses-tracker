@@ -49,7 +49,7 @@ export default function RootLayout() {
 		<QueryProvider>
 			<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
 				{session && session.user ? (
-					<Stack>
+					<Stack screenOptions={{ headerShown: false }}>
 						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 						<Stack.Screen name="+not-found" />
 					</Stack>

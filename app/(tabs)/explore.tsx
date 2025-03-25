@@ -1,79 +1,74 @@
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
+
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useExpenses } from '@/api/expenses/use-get-expenses';
+
 import { Button } from '@rneui/themed';
 
+import { useUserLogout } from '@/api/auth/use-user-logout';
 import { useAppStore } from '@/store/app.store';
-import React, { useEffect, useState } from 'react';
-
-import { useAddExpenses } from '@/api/expenses/use-add-expenses';
-import { CreateExpenseFormValue } from '@/schemas/expense.schema';
-import { useBalances } from '@/api/balance/use-get-balances';
-import ExpenseCard from '@/components/expenses/ExpenseCard';
-
-import ExpenseDialog from '@/components/expenses/ExpenseDialog';
+import { ExpenseCategory } from '@/types/expenses';
+import { ThemedText } from '@/components/ThemedText';
+import { Picker } from '@react-native-picker/picker';
+import { useState } from 'react';
+import { ThemedView } from '@/components/ThemedView';
 
 export default function TabTwoScreen() {
-	const [isOpen, setIsOpen] = useState<boolean>(false);
+	const categories = Object.values(ExpenseCategory).map((categoryName) => ({
+		label: categoryName,
+		value: categoryName,
+	}));
 
-	const { data: balanceData } = useBalances();
-	const { data, isFetching } = useExpenses();
+	const { mutate: logout, isPending: isPendingLogout } = useUserLogout();
+	const [selectedCategory, setSelectedCategory] = useState<
+		ExpenseCategory | ''
+	>('');
 
-	const { accounts, expenses, setExpenses, setBalance } = useAppStore();
+	const { getExpensesTotalByCategory } = useAppStore();
 
-	const toggleModal = () => {
-		setIsOpen((prev) => !prev);
+	const handleSelectCategory = (category: ExpenseCategory | '') => {
+		setSelectedCategory(category);
 	};
 
-	const { mutate } = useAddExpenses();
-
-	const onSubmit = (data: CreateExpenseFormValue) => {
-		mutate({ ...data, account_id: 3 });
-	};
-
-	useEffect(() => {
-		setExpenses(data || []);
-		setBalance(balanceData || []);
-	}, [data, balanceData]);
+	const total = getExpensesTotalByCategory(selectedCategory);
 
 	return (
-		<>
-			<ParallaxScrollView
-				headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-				headerImage={
-					<IconSymbol
-						size={310}
-						color="#808080"
-						name="chevron.left.forwardslash.chevron.right"
-						style={styles.headerImage}
-					/>
-				}
-			>
-				{accounts.length && (
-					<ThemedText type="title">
-						Balance: {`${accounts[0].balance} ${accounts[0].currency}`}
-					</ThemedText>
-				)}
-				<Button title="+" onPress={toggleModal} />
-
-				{isFetching && <ActivityIndicator />}
-
-				{expenses?.length ? (
-					expenses.map((item) => <ExpenseCard key={item.id} expense={item} />)
-				) : (
-					<ThemedText>there are no expenses yet</ThemedText>
-				)}
-			</ParallaxScrollView>
-			<ExpenseDialog
-				title="Add Expense"
-				isOpen={isOpen}
-				onClose={toggleModal}
-				onSubmit={onSubmit}
+		<ParallaxScrollView
+			headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+			headerImage={
+				<IconSymbol
+					size={310}
+					color="#808080"
+					name="chevron.left.forwardslash.chevron.right"
+					style={styles.headerImage}
+				/>
+			}
+		>
+			<ThemedView style={{ marginBottom: 100 }}>
+				<Picker
+					selectedValue={selectedCategory}
+					onValueChange={(value) => handleSelectCategory(value)}
+					style={styles.picker}
+				>
+					{categories.map((option, index) => (
+						<Picker.Item
+							key={index}
+							label={option.label}
+							value={option.value}
+						/>
+					))}
+				</Picker>
+				<ThemedText>
+					Total by {selectedCategory} Category: {String(total)}
+				</ThemedText>
+			</ThemedView>
+			<Button
+				title="Log out"
+				disabled={isPendingLogout}
+				onPress={() => logout()}
 			/>
-		</>
+		</ParallaxScrollView>
 	);
 }
 
@@ -84,21 +79,8 @@ const styles = StyleSheet.create({
 		left: -35,
 		position: 'absolute',
 	},
-	titleContainer: {
-		flexDirection: 'row',
-		gap: 8,
-	},
-	verticallySpaced: {
-		paddingTop: 4,
-		paddingBottom: 4,
-		alignSelf: 'stretch',
-	},
-	mt20: {
-		marginTop: 20,
-	},
-	bottomSheetContainer: {
-		backgroundColor: 'transparent',
-		// height: '40%',
-		// overflow: 'hidden',
+	picker: {
+		color: 'white',
+		borderRadius: 8,
 	},
 });
