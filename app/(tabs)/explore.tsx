@@ -59,7 +59,7 @@ export default function TabTwoScreen() {
 						/>
 					))}
 				</Picker>
-				<ThemedText>
+				<ThemedText type='subtitle'>
 					Total by {selectedCategory} Category: {String(total)}
 				</ThemedText>
 			</ThemedView>
