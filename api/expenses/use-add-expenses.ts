@@ -1,16 +1,19 @@
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/store/app.store';
-import { UpdateExpensesParams } from '@/types/expenses';
+import { Expense, UpdateExpensesParams } from '@/types/expenses';
 import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
-export const addExpenses = async (expense: UpdateExpensesParams) => {
+export const addExpenses = async (
+	expense: UpdateExpensesParams,
+): Promise<Expense> => {
 	const { data: userData } = await supabase.auth.getUser();
 
 	const { data, error } = await supabase
 		.from('expenses')
 		.insert([{ user_id: userData?.user?.id, ...expense }])
-		.select('*');
+		.select('*')
+		.single();
 
 	if (error) {
 		throw new Error(error.message);
@@ -25,9 +28,9 @@ export const useAddExpenses = () => {
 		mutationFn: addExpenses,
 		onSuccess: (data) => {
 			console.log('Added expense success');
-			if (data.length > 0) {
-				addExpense(data[0]);
-				subtractToBalance(data[0].amount, data[0].account_id);
+			if (data) {
+				addExpense(data);
+				subtractToBalance(data.amount, data.account_id);
 			}
 		},
 		onError: (err: Error) => {

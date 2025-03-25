@@ -13,7 +13,7 @@ const initialState: AppStoreState = {
 
 export const useAppStore = create(
 	persist<AppStoreState & AppStoreActions>(
-		(set) => ({
+		(set, get) => ({
 			...initialState,
 			setExpenses: (expenses) =>
 				set(() => ({
@@ -22,6 +22,20 @@ export const useAppStore = create(
 			setBalance: (accounts) =>
 				set(() => ({
 					accounts: [...accounts],
+				})),
+			updateAccount: (newAccount) =>
+				set((state) => ({
+					accounts: state.accounts.map((acc) =>
+						acc.id === newAccount.id ? newAccount : acc,
+					),
+				})),
+			addAccount: (newAccount) =>
+				set((state) => ({
+					accounts: [newAccount, ...state.accounts],
+				})),
+			removeAccount: (account_id) =>
+				set((state) => ({
+					accounts: state.accounts.filter((acc) => acc.id !== account_id),
 				})),
 			addToBalance: (amount, account_id) =>
 				set((state) => ({
@@ -83,13 +97,20 @@ export const useAppStore = create(
 				set((state) => ({
 					expenses: state.expenses.filter((el) => el.id !== id),
 				})),
+			getExpensesByAccountId: (id) =>
+				get().expenses.filter((expense) => expense.account_id === id),
+			getAccountById: (id) => get().accounts.find((acc) => acc.id === id),
+			getExpensesTotalByCategory: (category) =>
+				get()
+					.expenses.filter((expense) => expense.category === category)
+					.reduce((acc, expense) => {
+						return (acc += expense.amount);
+					}, 0),
 		}),
+
 		{
 			name: 'application-store',
 			storage: createJSONStorage(() => AsyncStorage),
-			// onRehydrateStorage: (state) => {
-			// 	return () => state.setHasHydrated(true);
-			// },
 		},
 	),
 );
