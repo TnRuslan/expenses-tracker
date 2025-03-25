@@ -50,6 +50,9 @@ export default function RegisterForm() {
 					secureTextEntry={true}
 					placeholder="Password"
 					autoCapitalize="none"
+					style={{
+						color: 'white',
+					}}
 				/>
 			</View>
 			<View style={styles.verticallySpaced}>
@@ -61,6 +64,9 @@ export default function RegisterForm() {
 					secureTextEntry={true}
 					placeholder="Confirm Password"
 					autoCapitalize="none"
+					style={{
+						color: 'white',
+					}}
 				/>
 			</View>
 			{isPendingRegister && <ActivityIndicator />}

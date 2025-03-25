@@ -1,7 +1,4 @@
-import {
-	LoginFormValue,
-	loginSchema,
-} from '@/schemas/auth.schema';
+import { LoginFormValue, loginSchema } from '@/schemas/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
@@ -52,6 +49,9 @@ export default function LoginForm() {
 					secureTextEntry={true}
 					placeholder="Password"
 					autoCapitalize="none"
+					style={{
+						color: 'white',
+					}}
 				/>
 			</View>
 			{isPending && <ActivityIndicator />}
