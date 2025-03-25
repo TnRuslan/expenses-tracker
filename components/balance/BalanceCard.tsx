@@ -9,6 +9,7 @@ import { useDeleteBalance } from '@/api/balance/use-delete-balances';
 import { useUpdateBalance } from '@/api/balance/use-update-balances';
 import { CreateBalanceFormValue } from '@/schemas/balance.schema';
 import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/Colors';
 
 export type BalanceCardProps = {
 	account: Balance;
@@ -40,8 +41,10 @@ export default function BalanceCard({ account }: BalanceCardProps) {
 		<Pressable onPress={() => router.push(`/balance/${account.id}`)}>
 			<ThemedView style={styles.card}>
 				<View style={styles.balanceContainer}>
-					<ThemedText>{account.currency}: </ThemedText>
-					<ThemedText>{String(account.balance)}</ThemedText>
+					<ThemedText style={styles.title}>{account.currency}: </ThemedText>
+					<ThemedText style={styles.title}>
+						{String(account.balance)}
+					</ThemedText>
 				</View>
 
 				<View style={styles.buttonsContainer}>
@@ -49,7 +52,7 @@ export default function BalanceCard({ account }: BalanceCardProps) {
 					<Button
 						title="Delete"
 						onPress={handleDelete(account.id)}
-						color={'error'}
+						color={Colors.dark.deleteButton}
 						loading={isPending}
 					/>
 				</View>
@@ -91,5 +94,9 @@ const styles = StyleSheet.create({
 	},
 	balanceContainer: {
 		flexDirection: 'row',
+	},
+	title: {
+		fontSize: 18,
+		fontWeight: 'bold',
 	},
 });

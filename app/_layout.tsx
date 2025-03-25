@@ -24,14 +24,17 @@ export default function RootLayout() {
 		SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
 	});
 	const [session, setSession] = useState<Session | null>(null);
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session);
+			setLoading(false);
 		});
 
 		supabase.auth.onAuthStateChange((_event, session) => {
 			setSession(session);
+			setLoading(false);
 		});
 	}, []);
 
@@ -41,7 +44,7 @@ export default function RootLayout() {
 		}
 	}, [loaded]);
 
-	if (!loaded) {
+	if (!loaded || loading) {
 		return null;
 	}
 

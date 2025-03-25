@@ -43,7 +43,7 @@ export default function BalanceDetails() {
 	if (!account) {
 		return (
 			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-				<ThemedText type="title">Balance not found</ThemedText>
+				<ThemedText type="subtitle">Balance not found</ThemedText>
 			</View>
 		);
 	}

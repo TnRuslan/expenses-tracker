@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
 import { Expense } from '@/types/expenses';
 import { useDeleteExpenses } from '@/api/expenses/use-delete-expenses';
@@ -8,6 +8,9 @@ import { Button } from '@rneui/themed';
 import ExpenseDialog from './ExpenseDialog';
 import { useUpdateExpenses } from '@/api/expenses/use-update-expenses';
 import { CreateExpenseFormValue } from '@/schemas/expense.schema';
+import { useAppStore } from '@/store/app.store';
+import { Colors } from '@/constants/Colors';
+import { ThemedText } from '../ThemedText';
 
 interface ExpenseCardProps {
 	expense: Expense;
@@ -18,9 +21,13 @@ export default function ExpenseCard({ expense }: ExpenseCardProps) {
 	const { mutate: updateExpense } = useUpdateExpenses();
 	const [isOpenUpdateModal, setIsOpenUpdateModal] = useState<boolean>(false);
 
+	const { getAccountById } = useAppStore();
+
 	const handleDelete = (id: number, amount: number) => () => {
 		deleteExpense({ id, amount });
 	};
+
+	const account = getAccountById(expense.account_id);
 
 	const toggleModal = () => {
 		setIsOpenUpdateModal((prev) => !prev);
@@ -38,19 +45,23 @@ export default function ExpenseCard({ expense }: ExpenseCardProps) {
 	return (
 		<>
 			<ThemedView style={styles.card}>
-				<Text style={styles.title}>{expense.title}</Text>
-				<Text style={styles.amount}>{String(expense.amount)}</Text>
-				<Text style={styles.category}>{expense.category}</Text>
-				<Text style={styles.date}>
-					{new Date(expense.date).toLocaleDateString()}
-				</Text>
+				<ThemedText style={styles.title}>{expense.title}</ThemedText>
+				<ThemedText style={styles.title}>
+					Amount: {String(expense.amount)} {account?.currency}
+				</ThemedText>
+				<View style={styles.categoryWrapper}>
+					<ThemedText style={styles.amount}>{expense.category}</ThemedText>
+					<ThemedText style={styles.amount}>
+						{new Date(expense.date).toLocaleDateString()}
+					</ThemedText>
+				</View>
 
 				<View style={styles.buttonsContainer}>
 					<Button title="Update" onPress={toggleModal} />
 					<Button
 						title="Delete"
 						onPress={handleDelete(expense.id, expense.amount)}
-						color={'error'}
+						color={Colors.dark.deleteButton}
 						loading={isPending}
 					/>
 				</View>
@@ -88,19 +99,19 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 	amount: {
-		fontSize: 16,
+		fontSize: 18,
 		color: '#333',
 	},
 	category: {
 		fontSize: 14,
 		color: '#777',
 	},
-	date: {
-		fontSize: 12,
-		color: '#aaa',
-	},
 	buttonsContainer: {
 		marginTop: 12,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+	},
+	categoryWrapper: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 	},
