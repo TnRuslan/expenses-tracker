@@ -28,7 +28,7 @@ export default function BalanceCard({ account }: BalanceCardProps) {
 	const handleUpdate = (data: CreateBalanceFormValue) => {
 		updateBalance({
 			id: account.id,
-			balance: data.balance,
+			...data,
 		});
 		toggleUpdateModal();
 	};

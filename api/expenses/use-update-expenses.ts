@@ -26,7 +26,8 @@ export const updateExpenses = async ({
 
 export const useUpdateExpenses = () => {
 	const { mutate } = useUpdateBalance();
-	const { updateExpense, updateBalance, accounts } = useAppStore();
+	const { updateExpense, updateBalance, accounts, getAccountById } =
+		useAppStore();
 	return useMutation({
 		mutationFn: updateExpenses,
 		onSuccess: (data, { previousAmount }) => {
@@ -35,13 +36,15 @@ export const useUpdateExpenses = () => {
 
 				updateExpense(data);
 				updateBalance(amount, account_id, previousAmount);
-
+				const account = getAccountById(account_id);
 				const updatedBalance = accounts[0]?.balance ?? 0;
 
-				mutate({
-					id: account_id,
-					balance: updatedBalance + previousAmount - amount,
-				});
+				if (account) {
+					mutate({
+						...account,
+						balance: updatedBalance + previousAmount - amount,
+					});
+				}
 			}
 
 			console.log('Updated expense success');
