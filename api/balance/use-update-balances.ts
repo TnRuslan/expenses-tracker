@@ -1,16 +1,16 @@
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/store/app.store';
-import { Balance, UpdateBalanceParams } from '@/types/balances';
+import { Balance } from '@/types/balances';
 import { useMutation } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
 export const updateBalance = async ({
 	id,
-	balance,
-}: UpdateBalanceParams): Promise<Balance> => {
+	...account
+}: Balance): Promise<Balance> => {
 	const { data, error } = await supabase
 		.from('accounts')
-		.update({ balance })
+		.update(account)
 		.eq('id', id)
 		.select('*')
 		.single();
